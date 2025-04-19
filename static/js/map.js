@@ -27,7 +27,7 @@ window.addEventListener("beforeunload", () => {
     userId: localStorage.getItem("userId")
   };
 
-  navigator.sendBeacon("/track", new Blob([JSON.stringify(payload)], {
+  navigator.sendBeacon(`${API_BASE_URL}/track`, new Blob([JSON.stringify(payload)], {
     type: "application/json"
   }));
 });
@@ -157,7 +157,7 @@ function fetchStations() {
         fuel: fuelType
     });
 
-    fetch(`/stations?${params.toString()}`)
+    fetch(`${API_BASE_URL}/stations?${params.toString()}`)
         .then(res => res.json())
         .then(data => {
             if (data.length > 0) {
@@ -235,7 +235,7 @@ function updateMarkersVisibility() {
 }
 
 function fetchHistory(stationId) {
-    fetch(`/stations/${stationId}/history`)
+    fetch(`${API_BASE_URL}/stations/${stationId}/history`)
         .then(res => {
             const loading = document.getElementById("loadingMessage");
             if (loading) loading.style.display = 'block';

@@ -3,9 +3,11 @@ if (!localStorage.getItem('userId')) {
 }
 const userId = localStorage.getItem('userId');
 
+const API_BASE_URL = `${window.location.protocol}//${window.location.host}`;
+
 
 function trackPageView(page) {
-    fetch("/track", {
+    fetch(`${API_BASE_URL}/track`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -18,7 +20,7 @@ function trackPageView(page) {
 }
 
 function trackEvent(type, data = {}) {
-    fetch("/track", {
+    fetch(`${API_BASE_URL}/track`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -32,7 +34,7 @@ function trackEvent(type, data = {}) {
 }
 
 function trackLeave(page, durationMs) {
-    fetch("/track", {
+    fetch(`${API_BASE_URL}/track`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

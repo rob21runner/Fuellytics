@@ -4,6 +4,8 @@ startDate.setDate(startDate.getDate() - daysRange);
 let endDate = new Date();
 endDate.setDate(endDate.getDate() + 1);
 
+const API_BASE_URL = `${window.location.protocol}//${window.location.host}`;
+
 function formatDate(date) {
   return date.toISOString().split("T")[0];
 }
@@ -18,7 +20,7 @@ function updatePeriodLabel() {
 function loadAdminData() {
   updatePeriodLabel();
   const params = `from=${formatDate(startDate)}&to=${formatDate(endDate)}`;
-  fetch(`/api/admin/data?${params}`)
+  fetch(`${API_BASE_URL}/api/admin/data?${params}`)
     .then(res => res.json())
     .then(data => {
       if (!Array.isArray(data)) return;

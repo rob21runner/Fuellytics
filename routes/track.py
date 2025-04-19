@@ -17,4 +17,4 @@ async def track_event(request: Request, db: Session = Depends(get_db)):
     )
     db.add(interaction)
     db.commit()
-    return
+    return {"ok": True}

@@ -11,7 +11,7 @@ window.addEventListener("beforeunload", () => {
     userId: localStorage.getItem("userId")
   };
 
-  navigator.sendBeacon("/track", new Blob([JSON.stringify(payload)], {
+  navigator.sendBeacon(`${API_BASE_URL}/track`, new Blob([JSON.stringify(payload)], {
     type: "application/json"
   }));
 });
