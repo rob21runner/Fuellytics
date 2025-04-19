@@ -17,7 +17,7 @@ admin_users = os.getenv("ADMIN_USERS", "").split(",")
 admin_passwords = os.getenv("ADMIN_PASSWORDS", "").split(",")
 attempts_by_ip = defaultdict(list)
 MAX_ATTEMPTS = 5
-BLOCK_DURATION = 300
+BLOCK_DURATION = timedelta(minutes=5)
 recent_success_by_ip = {}
 
 def get_client_ip(request: Request) -> str:
