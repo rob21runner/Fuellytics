@@ -232,18 +232,16 @@ body {
 
 /* Adaptation si trop proche du bord gauche */
 .tooltip.left .tooltiptext {
-  left: 0%;
+  left: 0;
   transform: translateX(0);
 }
 
 /* Adaptation si trop proche du bord droit */
 .tooltip.right .tooltiptext {
-  right: 0%;
+  right: 0;
   left: auto;
   transform: translateX(0);
 }
-
-
 
 @media (max-width: 1130px) {
     header {
@@ -275,7 +273,11 @@ body {
     }
 }
 
-
+@media (max-width: 950px) {
+    #notification {
+        top: 100px
+    }
+}
 
 @media (max-width: 422px) {
     body {
@@ -314,5 +316,9 @@ body {
     }
     #historyChart {
         height: 150px;
+    }
+
+    #notification {
+        top: 90px
     }
 }

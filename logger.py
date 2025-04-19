@@ -7,6 +7,7 @@ from datetime import datetime
 INFO_WEBHOOK_URL = os.getenv("INFO_WEBHOOK_URL")
 ERRORS_WEBHOOK_URL = os.getenv("ERRORS_WEBHOOK_URL")
 ADMIN_WEBHOOK_URL = os.getenv("ADMIN_WEBHOOK_URL")
+MAP_API_KEY = os.getenv("MAP_API_KEY")
 
 LOG_FILE_PATH = os.path.join("logs", "local_logs.txt")
 
@@ -93,7 +94,7 @@ def log_admin_attempt(ip: str, count: int, authorized: bool):
         lat, lon = geo.get("lat", 0), geo.get("lon", 0)
 
         # Image de carte (staticmap)
-        map_url = f"https://staticmap.openstreetmap.de/staticmap.php?center={lat},{lon}&zoom=10&size=500x500&markers={lat},{lon},red-pushpin"
+        map_url = f"https://maps.geoapify.com/v1/staticmap?style=osm-bright&width=500&height=500&center=lonlat:{lon},{lat}&zoom=4.9&marker=lonlat:{lon},{lat};type:circle;color:%23D20000;size:small;&apiKey={MAP_API_KEY}"
 
         # Construction de l'embed
         payload = {
