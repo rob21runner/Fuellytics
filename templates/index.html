@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prix Carburants</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header>
+        <div id="floatingHeader">
+            <a href="/" class="nav-link current">Carte</a>
+            <a href="/overview" class="nav-link">Stats</a>
+            <a href="/about" class="nav-link">À propos</a>
+        </div>
+        <div id="controls">
+            <select id="fuelSelect">
+                <option value="SP98">SP98</option>
+                <option value="Gazole">Gazole</option>
+                <option value="E10">E10</option>
+                <option value="SP95">SP95</option>
+                <option value="E85">E85</option>
+                <option value="GPLc">GPLc</option>
+            </select>
+            <input id="searchInput" type="text" placeholder="Rechercher une ville..." />
+            <button id="searchButton">Aller</button>
+        </div>
+    </header>
+
+    <div id="map"></div>
+    <div id="historyBox">
+        <div id="stationInfo"></div>
+        <div id="historyChart"></div>
+    </div>
+    <div id="notification">
+        <div id="loadingMessage" class="notif" >
+            ⛽ Chargement des données...
+        </div>
+        <div id="fuelMessage" class="notif">
+            Préférence enregistrée ✅
+        </div>
+    </div>
+
+    <script src="https://cdn.plot.ly/plotly-2.20.0.min.js"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="/static/js/base.js"></script>
+    <script src="/static/js/map.js"></script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Vue d'ensemble des prix – Carburants</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f5f7;
+            margin: 0;
+            padding: 40px 20px;
+        }
+        .overview-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+        }
+        h1 {
+            margin-top: 0;
+        }
+        .building {
+            text-align: center;
+            font-size: 40px;
+            padding: 70px 0;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div id="floatingHeader">
+        <a href="/" class="nav-link">Carte</a>
+        <a href="/overview" class="nav-link current">Stats</a>
+        <a href="/about" class="nav-link">À propos</a>
+    </div>
+</header>
+<div class="overview-container">
+    <h1>Vue d’ensemble des prix des carburants</h1>
+
+    <div class="building">🚧 🏗 En Construction 🏗 🚧</div>
+</div>
+
+<script src="/static/js/base.js"></script>
+<script src="/static/js/overview.js"></script>
+</body>
