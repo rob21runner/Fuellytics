@@ -94,9 +94,8 @@ def log_admin_attempt(ip: str, count: int, authorized: bool):
         lat, lon = geo.get("lat", 0), geo.get("lon", 0)
 
         # Image de carte (staticmap)
-        map_url = f"https://maps.geoapify.com/v1/staticmap?style=osm-bright&width=500&height=500&center=lonlat:{lon},{lat}&zoom=4.9&marker=lonlat:{lon},{lat};type:circle;color:%23D20000;size:small;&apiKey={MAP_API_KEY}"
+        map_url = f"https://maps.geoapify.com/v1/staticmap?style=osm-bright-smooth&width=500&height=500&center=lonlat%3A{lon}%2C{lat}&zoom=14.3497&marker=lonlat%3A{lon}%2C{lat}%3Btype%3Acircle%3Bcolor%3A%23d20000%3Bsize%3Asmall&apiKey={MAP_API_KEY}"
 
-        # Construction de l'embed
         payload = {
             "embeds": [{
                 "title": f"🚨 Tentative d'accès à l'admin",

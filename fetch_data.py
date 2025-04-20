@@ -12,7 +12,7 @@ def fetch_and_store():
     task = logger.log_info_start("Fetching new data",f"Fetching data from {URL}\n\nAutomatic update {datetime.now(timezone.utc).strftime('%I%p').lower()}")
     db: Session = SessionLocal()
     try:
-        response = requests.get(URL)
+        response = requests.get(URL, verify=False)
         data = response.json()
         now = datetime.now(timezone.utc)
 
