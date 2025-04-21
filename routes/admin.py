@@ -74,7 +74,7 @@ def get_raw_data(
 ):
     from_dt = datetime.strptime(from_, "%Y-%m-%d")
     to_dt = datetime.strptime(to_, "%Y-%m-%d")
-    td = timedelta(day=1)
+    td = timedelta(days=1)
 
     interactions = db.query(Interaction).filter(
         Interaction.timestamp >= from_dt,
