@@ -2,7 +2,7 @@ import traceback
 import requests
 import os
 import httpx
-from datetime import datetime
+from datetime import datetime, timezone
 
 INFO_WEBHOOK_URL = os.getenv("INFO_WEBHOOK_URL")
 ERRORS_WEBHOOK_URL = os.getenv("ERRORS_WEBHOOK_URL")
@@ -26,6 +26,7 @@ class DiscordLogTask:
             "title": f"🔄 {self.task_name} - {status}",
             "color": 0x2ecc71 if status.lower() == "success" else 0xe74c3c,
             "description": description or "",
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
         try:
             requests.patch(self.edit_url, json={"embeds": [embed]})
@@ -44,7 +45,8 @@ def log_error(exc: Exception, context: str = "No context provided"):
             "fields": [
                 {"name": "Context", "value": context[:1024], "inline": False},
                 {"name": "Traceback", "value": f"```{tb[-1000:]}```", "inline": False}
-            ]
+            ],
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
         try:
             requests.post(ERRORS_WEBHOOK_URL, json={"embeds": [embed]})
@@ -63,7 +65,8 @@ def log_info_start(task_name: str, description: str = "") -> DiscordLogTask:
     embed = {
         "title": f"🚀 {task_name} - Started",
         "description": description,
-        "color": 0x3498db
+        "color": 0x3498db,
+        "timestamp": datetime.now(timezone.utc).isoformat()
     }
     try:
         resp = requests.post(INFO_WEBHOOK_URL, json={"embeds": [embed]})
@@ -103,7 +106,7 @@ def log_admin_attempt(ip: str, count: int, authorized: bool):
                                f"**Localisation :** {location}\n"
                                f"**Tentatives :** `{count}`\n"
                                f"**Status :** `{"Authorized" if authorized else "Denied"}`\n",
-                "timestamp": datetime.now().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
                 "color": 0x44ff44 if authorized else 0xff4444,
                 "thumbnail": { "url": map_url }
             }]
@@ -116,6 +119,6 @@ def log_admin_attempt(ip: str, count: int, authorized: bool):
 
 
 def _log_locally(text: str):
-    timestamp = datetime.utcnow().isoformat()
+    timestamp = datetime.now(timezone.utc).isoformat()
     with open(LOG_FILE_PATH, "a", encoding="utf-8") as f:
         f.write(f"[{timestamp}] {text}\n")

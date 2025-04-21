@@ -2,7 +2,7 @@ let daysRange = 7;
 let startDate = new Date();
 startDate.setDate(startDate.getDate() - daysRange);
 let endDate = new Date();
-endDate.setDate(endDate.getDate() + 1);
+endDate.setDate(endDate.getDate());
 
 const API_BASE_URL = `${window.location.protocol}//${window.location.host}`;
 
