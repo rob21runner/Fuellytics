@@ -119,6 +119,7 @@ def log_admin_attempt(ip: str, count: int, authorized: bool):
 
 
 def _log_locally(text: str):
+    os.makedirs("logs", exist_ok=True)
     timestamp = datetime.now(timezone.utc).isoformat()
     with open(LOG_FILE_PATH, "a", encoding="utf-8") as f:
         f.write(f"[{timestamp}] {text}\n")
