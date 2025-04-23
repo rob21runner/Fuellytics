@@ -1,53 +1,71 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <title>Administration – Fuellytics</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
-  <link rel="stylesheet" href="/static/css/admin.css" />
+    <meta charset="UTF-8" />
+    <title>Administration – Fuellytics</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <link rel="stylesheet" href="/static/css/admin.css" />
 </head>
 <body>
-  <div class="admin-header">
-  <h1>Panneau d’administration</h1>
-  <div class="period-controls">
-    <div class="range-buttons">
-      <button data-range="7">7 jours</button>
-      <button data-range="30">30 jours</button>
-      <button data-range="365">1 an</button>
+<header class="admin-header">
+    <h1>Panneau d’administration</h1>
+    <div class="period-controls">
+        <div class="range-buttons">
+            <button data-range="7">7 jours</button>
+            <button data-range="30">30 jours</button>
+            <button data-range="365">1 an</button>
+        </div>
+        <div class="period-nav">
+            <button id="prevPeriod">‹</button>
+            <span id="periodLabel">11 avril 2025 – 18 avril 2025</span>
+            <button id="nextPeriod">›</button>
+        </div>
     </div>
-    <div class="period-nav">
-      <button id="prevPeriod">‹</button>
-      <span id="periodLabel">11 avril 2025 – 18 avril 2025</span>
-      <button id="nextPeriod">›</button>
-    </div>
-  </div>
-</div>
+</header>
 
 <div class="admin-grid">
-  <div class="box" id="chartUsersBox">
-    <div class="box-title">Évolution des utilisateurs</div>
-    <div id="chartUsers"></div>
-  </div>
+    <div class="box" id="chartUsersBox">
+        <div class="box-title">Évolution des utilisateurs</div>
+        <div id="chartUsers"></div>
+    </div>
 
-  <div class="box" id="summaryBox">
-    <div class="box-title">Statistiques clés</div>
-    <ul id="statsList"></ul>
-  </div>
+    <div id="summaryBox">
+        <div class="stat box">
+            <div class="label">👥 Utilisateurs uniques</div>
+            <div id="stat-unique-users">0</div>
+        </div>
+        <div class="stat box">
+            <div class="label">🆕 Nouveaux utilisateurs</div>
+            <div id="stat-new-users">0</div>
+        </div>
+        <div class="stat box">
+            <div class="label">🔁 Visites moyennes</div>
+            <div id="stat-avg-visits">0</div>
+        </div>
+        <div class="stat box">
+            <div class="label">⛽ Pompes visualisées</div>
+            <div id="stat-station-views">0</div>
+        </div>
+    </div>
 
-  <div class="box" id="pathsTableBox">
-    <div class="box-title">Parcours utilisateurs</div>
-    <table id="pathsTable"></table>
-  </div>
+    <div class="box" id="pathsTableBox">
+        <div class="box-title">Parcours utilisateurs</div>
+        <table id="pathsTable"></table>
+    </div>
 
-  <div class="box" id="mapBox">
-    <div class="box-title">Carte des zones visitées</div>
-    <div id="visitMap" style="height: 400px;"></div>
-    <div id="geolocPie" class="map-overlay"></div>
-  </div>
+    <div class="box" id="mapBox">
+        <div class="box-title">Carte des zones visitées</div>
+        <div id="visitMap" style="height: 372px; width: 100%;"></div>
+        <div id="geolocPie" class="map-overlay"></div>
+    </div>
 </div>
 
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
-  <script src="/static/js/admin.js"></script>
+<script src="/static/js/admin.js"></script>
 </body>
 </html>

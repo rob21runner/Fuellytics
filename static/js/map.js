@@ -9,27 +9,22 @@ L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap'
 }).addTo(map);
 
-// const startTime = Date.now();
 trackPageView("map");
 
-// window.addEventListener("beforeunload", () => {
-//     const duration = Date.now() - startTime;
-//     trackLeave("map", duration);
-// });
 let sessionStart = Date.now();
 
 window.addEventListener("beforeunload", () => {
-  const duration = Date.now() - sessionStart;
-  const payload = {
-    type: "leave",
-    page: "map",
-    data: { durationMs: duration },
-    userId: localStorage.getItem("userId")
-  };
+    const duration = Date.now() - sessionStart;
+    const payload = {
+        type: "leave",
+        page: "map",
+        data: { durationMs: duration },
+        userId: localStorage.getItem("userId")
+    };
 
-  navigator.sendBeacon(`${API_BASE_URL}/track`, new Blob([JSON.stringify(payload)], {
-    type: "application/json"
-  }));
+    navigator.sendBeacon(`${API_BASE_URL}/track`, new Blob([JSON.stringify(payload)], {
+        type: "application/json"
+    }));
 });
 
 const stationsCache = new Map();
@@ -115,11 +110,10 @@ if (searchButton && searchInput) {
 
 function getColor(price) {
     if (!window.globalMinPrice || !window.globalMaxPrice || window.globalMinPrice === window.globalMaxPrice) {
-        return '#888'; // fallback color
+        return '#888';
     }
     const ratio = Math.min(Math.max((price - window.globalMinPrice) / (window.globalMaxPrice - window.globalMinPrice), 0), 1);
 
-    // Gradient from green to yellow to red
     let r, g;
     if (ratio < 0.5) {
         r = Math.floor(255 * (ratio * 2));
@@ -138,7 +132,6 @@ function fetchStations() {
 
     const bounds = map.getBounds();
 
-    // Si les nouvelles bounds sont incluses dans la zone déjà chargée, ne rien faire
     if (lastFetchedBounds && lastFetchedBounds.contains(bounds)) {
         updateMarkersVisibility();
         return;
@@ -260,17 +253,16 @@ function fetchHistory(stationId) {
                         const icon = serviceIcons[s];
                         const safeLabel = s.replace(/"/g, '&quot;');
 
-                        // Dynamically assign tooltip alignment later if needed
                         return icon
-                          ? `<div class="service-icon tooltip" title="${safeLabel}" data-label="${safeLabel}">
+                            ? `<div class="service-icon tooltip" title="${safeLabel}" data-label="${safeLabel}">
                                 <i class="fas ${icon}"></i>
                                 <div class="tooltiptext">${safeLabel}</div>
                              </div>`
-                          : '';
+                            : '';
                     }).join('');
                 }
             } catch (e) {
-                servicesHtml = ''; // ou message texte si tu préfères
+                servicesHtml = '';
             }
 
             document.getElementById("stationInfo").innerHTML = `
@@ -337,11 +329,17 @@ function fetchHistory(stationId) {
                     title: 'Prix (€)',
                     range: [0, 2.5]
                 },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
                 xaxis: {
                     title: 'Date',
                     type:'date'
                 }
-            }, { responsive: true }).then(() => {
+            }, {
+                responsive: true,
+                displayModeBar: false,
+                displaylogo: false
+            }).then(() => {
                 Plotly.Plots.resize('historyChart');
                 historyBox.style.visibility = "visible";
             });
