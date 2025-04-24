@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Depends, Request
+from fastapi import FastAPI, Depends
+from contextlib import asynccontextmanager
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -9,10 +10,17 @@ load_dotenv(dotenv_path="./.env")
 from routes import stations, track, admin
 from db import Base, engine
 from fetch_data import fetch_and_store
+from logger import log_status
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await log_status(True)
+    yield
+    await log_status(False)
+
+app = FastAPI(lifespan=lifespan)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(stations.router)

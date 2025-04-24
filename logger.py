@@ -1,7 +1,6 @@
 import traceback
 import requests
 import os
-import httpx
 from datetime import datetime, timezone
 
 INFO_WEBHOOK_URL = os.getenv("INFO_WEBHOOK_URL")
@@ -23,7 +22,7 @@ class DiscordLogTask:
             return
 
         embed = {
-            "title": f"🔄 {self.task_name} - {status}",
+            "title": f"{'✅' if status.lower() == 'success' else '❌'} {self.task_name} - {status}",
             "color": 0x2ecc71 if status.lower() == "success" else 0xe74c3c,
             "description": description or "",
             "timestamp": datetime.now(timezone.utc).isoformat()
@@ -86,9 +85,7 @@ def log_admin_attempt(ip: str, count: int, authorized: bool):
         return
 
     try:
-        # Géolocalisation IP
-        geo = {}
-        geo_res = httpx.get(f"http://ip-api.com/json/{ip}?fields=status,message,country,city,lat,lon", timeout=3)
+        geo_res = requests.get(f"http://ip-api.com/json/{ip}?fields=status,message,country,city,lat,lon", timeout=3)
         geo = geo_res.json()
         if geo.get("status") != "success":
             geo = {}
@@ -107,15 +104,36 @@ def log_admin_attempt(ip: str, count: int, authorized: bool):
                                f"**Tentatives :** `{count}`\n"
                                f"**Status :** `{"Authorized" if authorized else "Denied"}`\n",
                 "timestamp": datetime.now(timezone.utc).isoformat(),
-                "color": 0x44ff44 if authorized else 0xff4444,
+                "color": 0x2ecc71 if authorized else 0xe74c3c,
                 "thumbnail": { "url": map_url }
             }]
         }
 
-        httpx.post(ADMIN_WEBHOOK_URL, json=payload)
+        requests.post(ADMIN_WEBHOOK_URL, json=payload)
 
     except Exception as e:
         _log_locally(f"[Webhook] Erreur : {e}")
+
+async def log_status(starting: bool):
+    if INFO_WEBHOOK_URL is None:
+        _log_locally(f"[STATUS] {'Starting' if starting else 'Stopping'}")
+        return
+
+    if starting:
+        description = "The Api is online, you can visit the website."
+    else:
+        description = "The Api is offline, if this is not intentional, please restart the server."
+
+    embed = {
+        "title": f"🔄 {'Started' if starting else 'Stopped'}",
+        "description": description,
+        "color": 0x2ecc71 if starting else 0xe74c3c,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+    try:
+        requests.post(INFO_WEBHOOK_URL, json={"embeds": [embed]})
+    except Exception as e:
+        _log_locally(f"[ERROR] Failed to send to Discord: {e}")
 
 
 def _log_locally(text: str):

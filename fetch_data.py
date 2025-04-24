@@ -1,6 +1,7 @@
 import requests
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
+import json
 
 from db import SessionLocal
 import logger
@@ -8,12 +9,21 @@ import models
 
 URL = "https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/exports/geojson?limit=10000"
 
-def fetch_and_store():
+def fetch_and_store(try_count=0):
     task = logger.log_info_start("Fetching new data",f"Fetching data from {URL}\n\nAutomatic update {datetime.now(timezone.utc).strftime('%I%p').lower()}")
     db: Session = SessionLocal()
     try:
         response = requests.get(URL, verify=False)
-        data = response.json()
+        try:
+            data = response.json()
+        except json.JSONDecodeError as e:
+            task.update("Failed", "JSON error. See error log for details.")
+            logger.log_error(e, context=f"While processing json in fetch_and_store() at pos {e.pos}: {e.msg}")
+            if try_count < 5:
+                fetch_and_store(try_count + 1)
+            else :
+                return
+
         now = datetime.now(timezone.utc)
 
         db.query(models.Prix).filter(
