@@ -1,0 +1,32 @@
+{
+  "name": "Fuellytics",
+  "short_name": "Fuellytics",
+  "description": "Suivez les prix des carburants en France avec précision et style.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "rgb(255,255,255)",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/static/img/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/img/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/img/icons/maskable-icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "scope": "/",
+  "id": "/?source=pwa"
+}
