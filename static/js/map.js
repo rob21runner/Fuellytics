@@ -1,3 +1,20 @@
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('splashScreen').classList.add('hidden');
+  }, 2000); // 2 secondes avant de faire disparaître (tu peux ajuster)
+});
+
+const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+let textColor;
+
+if (isDarkMode) {
+    textColor = '#f4f5f6'
+} else {
+    textColor = '#333'
+}
+
+
 const map = L.map('map', {
     zoomControl: false,
     minZoom: 6,
@@ -26,6 +43,12 @@ window.addEventListener("beforeunload", () => {
         type: "application/json"
     }));
 });
+
+function playSound(path) {
+  const sound = new Audio(path);
+  sound.volume = 0.1;
+  sound.play();
+}
 
 const stationsCache = new Map();
 let fuelType = localStorage.getItem('preferredFuel') || 'SP95';
@@ -242,7 +265,7 @@ function fetchHistory(stationId) {
                 return;
             }
 
-            historyBox.style.visibility = "hidden";
+            // historyBox.style.visibility = "hidden";
             historyBox.style.display = "block";
 
             let servicesHtml = '';
@@ -289,10 +312,9 @@ function fetchHistory(stationId) {
                     if (!tooltip) return;
 
                     const rect = tooltip.getBoundingClientRect();
-                    const margin = 25; // distance du bord en px
+                    const margin = 25;
 
                     el.classList.remove('left', 'right');
-                    console.log(rect.left)
 
                     if (rect.left  < margin) {
                         el.classList.add('left');
@@ -325,6 +347,9 @@ function fetchHistory(stationId) {
 
             Plotly.newPlot('historyChart', traces, {
                 margin: { t: 20, r: 10, l: 40, b: 40 },
+                font: {
+                    color: textColor
+                },
                 yaxis: {
                     title: 'Prix (€)',
                     range: [0, 2.5]
@@ -340,8 +365,9 @@ function fetchHistory(stationId) {
                 displayModeBar: false,
                 displaylogo: false
             }).then(() => {
+                playSound("static/sounds/bubbles.mp3");
+                historyBox.classList.add("show")
                 Plotly.Plots.resize('historyChart');
-                historyBox.style.visibility = "visible";
             });
             const loading = document.getElementById("loadingMessage");
             if (loading) loading.style.display = 'none';
@@ -351,8 +377,12 @@ function fetchHistory(stationId) {
 map.on('moveend', fetchStations);
 
 map.on('click', () => {
-    document.getElementById("historyBox").style.display = "none";
     if (selectedMarker) {
+        document.getElementById("historyBox").classList.remove("show")
+        playSound("static/sounds/paper.mp3");
+        setTimeout(() => {
+            document.getElementById("historyBox").style.display = "none";
+        }, 300);
         try {
             selectedMarker.getElement().children[0].style.boxShadow = '';
             selectedMarker.getElement().children[0].style.transform = 'scale(1)';
@@ -361,6 +391,8 @@ map.on('click', () => {
         }
 
     }
+
+
 });
 
 function isInFrance(lat, lon) {

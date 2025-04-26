@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>À propos – Fuellytics</title>
     <link rel="stylesheet" href="/static/css/style.css" />
     <link rel="manifest" href="/static/manifest.json">
@@ -28,18 +28,18 @@
         });
     </script>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 40px 20px;
-            background-color: #f4f5f7;
-            color: #333;
+        #main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-block: 40px;
+            width: --webkit-fill-available;
+            color: var(--text-main);
             line-height: 1.6;
         }
         .about-container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
+            width: 800px;
+            background: var(--box-bg);
             padding: 30px 40px;
             border-radius: 12px;
             box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
@@ -54,6 +54,26 @@
         a:hover {
             text-decoration: underline;
         }
+
+        @media (max-width: 1130px) {
+            .about-container {
+                width: 60vw;
+            }
+        }
+
+        @media (max-width: 422px) {
+            body {
+                width: 100vw;
+                height: 100vh;
+                overflow: hidden
+            }
+
+            .about-container {
+                width: 80vw;
+                padding: 10px 15px;
+                border-radius: 0 0 12px 12px
+            }
+        }
     </style>
 </head>
 <body>
@@ -64,53 +84,55 @@
         <a href="/about" class="nav-link current">À propos</a>
     </div>
 </header>
-<div class="about-container">
-    <h1>À propos de ce site</h1>
+<div id="main">
+    <div class="about-container">
+        <h1>À propos de ce site</h1>
 
-    <p>
-        Ce site a pour but de vous aider à visualiser rapidement les prix des carburants dans les stations-service en France,
-        en vous proposant une carte interactive avec des données à jour plusieurs fois par jour.
-    </p>
+        <p>
+            Ce site a pour but de vous aider à visualiser rapidement les prix des carburants dans les stations-service en France,
+            en vous proposant une carte interactive avec des données à jour plusieurs fois par jour.
+        </p>
 
-    <h2>🗂 D’où viennent les données ?</h2>
-    <p>
-        Les données proviennent du <strong><a href="https://data.economie.gouv.fr" target="_blank">portail data.gouv.fr</a></strong>,
-        et plus précisément du jeu de données :
-        <br/>
-        <a href="https://data.economie.gouv.fr/explore/dataset/prix-des-carburants-en-france-flux-instantane-v2/" target="_blank">
-            Prix des carburants en France - Flux instantané (v2)
-        </a>.
-    </p>
-    <p>
-        Ce flux GeoJSON est mis à jour en temps réel par les exploitants et est librement accessible en Open Data.
-    </p>
+        <h2>🗂 D’où viennent les données ?</h2>
+        <p>
+            Les données proviennent du <strong><a href="https://data.economie.gouv.fr" target="_blank">portail data.gouv.fr</a></strong>,
+            et plus précisément du jeu de données :
+            <br/>
+            <a href="https://data.economie.gouv.fr/explore/dataset/prix-des-carburants-en-france-flux-instantane-v2/" target="_blank">
+                Prix des carburants en France - Flux instantané (v2)
+            </a>.
+        </p>
+        <p>
+            Ce flux GeoJSON est mis à jour en temps réel par les exploitants et est librement accessible en Open Data.
+        </p>
 
-    <h2>🧠 Comment les données sont-elles traitées ?</h2>
-    <p>
-        Le backend du site télécharge ce flux toutes les 4 heures au premier quart d'heure (à 00h, 04h, 08h, 12h, 16h et 20h), extrait les prix pertinents et les stocke
-        localement pour suivre l’évolution des prix sur 7 jours.
-    </p>
-    <p>
-        Les stations sont filtrées selon le carburant sélectionné, et les marqueurs colorés sont générés en fonction du prix minimum et maximum visible sur la carte.
-    </p>
-    <p>
-        Nous collectons les informations sont collectées anonymement<small>*</small> afin d'améliorer le site et le rendre plus intuitif, nous stockons un id utilisateur et le dernier carburant selectionné pour fluidifier votre navigation et mieux suivre les actions pour amélioration.
-    </p>
+        <h2>🧠 Comment les données sont-elles traitées ?</h2>
+        <p>
+            Le backend du site télécharge ce flux toutes les 4 heures au premier quart d'heure (à 00h, 04h, 08h, 12h, 16h et 20h), extrait les prix pertinents et les stocke
+            localement pour suivre l’évolution des prix sur 7 jours.
+        </p>
+        <p>
+            Les stations sont filtrées selon le carburant sélectionné, et les marqueurs colorés sont générés en fonction du prix minimum et maximum visible sur la carte.
+        </p>
+        <p>
+            Nous collectons les informations sont collectées anonymement<small>*</small> afin d'améliorer le site et le rendre plus intuitif, nous stockons un id utilisateur et le dernier carburant selectionné pour fluidifier votre navigation et mieux suivre les actions pour amélioration.
+        </p>
 
-    <h2>🎯 Pourquoi ce site ?</h2>
-    <p>
-        Parce qu’il n’existait pas d’interface vraiment fluide et agréable à utiliser pour explorer les prix du carburant. Le but est d’offrir
-        un outil <strong>rapide, esthétique et utile</strong>, sans publicité ni tracking.
-    </p>
-    <p>
-        Ce projet est <a href="https://github.com/rob21runner/Fuellytics#">open-source</a> et pourra évoluer avec <a href="https://discord.gg/zn3QynHBjR">vos retours</a> 🚀
-    </p>
+        <h2>🎯 Pourquoi ce site ?</h2>
+        <p>
+            Parce qu’il n’existait pas d’interface vraiment fluide et agréable à utiliser pour explorer les prix du carburant. Le but est d’offrir
+            un outil <strong>rapide, esthétique et utile</strong>, sans publicité ni tracking.
+        </p>
+        <p>
+            Ce projet est <a href="https://github.com/rob21runner/Fuellytics#">open-source</a> et pourra évoluer avec <a href="https://discord.gg/zn3QynHBjR">vos retours</a> 🚀
+        </p>
 
-    <p><small>* sauf en cas de tentative de connection à la page administration.</small></p>
+        <p><small>* sauf en cas de tentative de connection à la page administration.</small></p>
 
-    <p style="margin-top: 30px;">
-        <a href="/">← Retour à la carte</a>
-    </p>
+        <p style="margin-top: 30px;">
+            <a href="/">← Retour à la carte</a>
+        </p>
+    </div>
 </div>
 </body>
 </html>
