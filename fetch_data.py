@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 import json
 
 from db import SessionLocal
+from routes.recap import calculate_zones
 import logger
 import models
 
@@ -107,6 +108,7 @@ def fetch_and_store(try_count=0):
 
         db.commit()
         task.update("Success",f"Fetched new data from {URL}\n\nAutomatic update {datetime.now(timezone.utc).strftime('%I%p').lower()}")
+        calculate_zones()
     except Exception as e:
         task.update("Failed", "Check error log for details.")
         logger.log_error(e, context="While processing data in fetch_and_store()")

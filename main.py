@@ -11,7 +11,7 @@ load_dotenv(dotenv_path="./.env")
 from routes import stations, track, admin, recap
 from db import Base, engine, SessionLocal
 from fetch_data import fetch_and_store
-from logger import log_status
+from logger import log_status, log_info_start, log_error
 
 Base.metadata.create_all(bind=engine)
 
@@ -62,12 +62,14 @@ scheduler.add_job(fetch_and_store, 'cron', hour='0, 4, 8, 12, 16, 20', minute=15
 scheduler.start()
 
 if not os.path.exists("static/recap"):
-    print("[INFO] Dossier recap absent, calcul initial...")
-    db = SessionLocal()
+    task = log_info_start("Initial data fetch", "The folder recap does not exist. Fetching new data.")
     try:
-        recap.calculate_zones(db)
-    finally:
-        db.close()
+        fetch_and_store()
+        task.update("Success", "Folder created and fetched new data from the API.")
+    except Exception as e:
+        task.update("Failed", "Check error log for details.")
+        log_error(e, context="While processing data.")
+
 
 if __name__ == "__main__":
 
