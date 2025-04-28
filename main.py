@@ -7,7 +7,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from dotenv import load_dotenv
 load_dotenv(dotenv_path="./.env")
 
-from routes import stations, track, admin, recap
+from routes import stations, track, admin
 from db import Base, engine
 from fetch_data import fetch_and_store
 from logger import log_status
@@ -26,7 +26,6 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(stations.router)
 app.include_router(track.router)
 app.include_router(admin.router)
-app.include_router(recap.router)
 
 favicon_path = 'favicon.ico'
 
