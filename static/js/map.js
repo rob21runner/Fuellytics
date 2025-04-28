@@ -4,28 +4,6 @@ window.addEventListener('load', () => {
   }, 2000);
 });
 
-const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-let textColor;
-
-if (isDarkMode) {
-    textColor = '#f4f5f6'
-} else {
-    textColor = '#333'
-}
-
-function updateThemeColor() {
-  const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-  if (metaThemeColor) {
-    metaThemeColor.setAttribute('content', isDark ? '#333' : '#f4f5f6');
-  }
-}
-
-updateThemeColor();
-
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeColor);
-
 
 const map = L.map('map', {
     zoomControl: false,

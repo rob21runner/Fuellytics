@@ -23,6 +23,20 @@ if (!localStorage.getItem('userId')) {
 }
 const userId = localStorage.getItem('userId');
 
+let textColor = '#333'
+
+function updateThemeColor() {
+  const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  textColor = isDark ? '#f4f5f6' : '#333'
+  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+  if (metaThemeColor) {
+    metaThemeColor.setAttribute('content', isDark ? '#333' : '#f4f5f6');
+  }
+}
+
+updateThemeColor();
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeColor);
 
 function trackPageView(page) {
     fetch(`${API_BASE_URL}/track`, {
