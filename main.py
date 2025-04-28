@@ -3,12 +3,13 @@ from contextlib import asynccontextmanager
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse
 from apscheduler.schedulers.background import BackgroundScheduler
+import os
 
 from dotenv import load_dotenv
 load_dotenv(dotenv_path="./.env")
 
-from routes import stations, track, admin
-from db import Base, engine
+from routes import stations, track, admin, recap
+from db import Base, engine, SessionLocal
 from fetch_data import fetch_and_store
 from logger import log_status
 
@@ -26,6 +27,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(stations.router)
 app.include_router(track.router)
 app.include_router(admin.router)
+app.include_router(recap.router)
 
 favicon_path = 'favicon.ico'
 
@@ -59,8 +61,16 @@ scheduler = BackgroundScheduler()
 scheduler.add_job(fetch_and_store, 'cron', hour='0, 4, 8, 12, 16, 20', minute=15)
 scheduler.start()
 
+if not os.path.exists("static/recap"):
+    print("[INFO] Dossier recap absent, calcul initial...")
+    db = SessionLocal()
+    try:
+        recap.calculate_zones(db)
+    finally:
+        db.close()
 
 if __name__ == "__main__":
+
     import uvicorn
 
     uvicorn.run(app, host="0.0.0.0", port=8010)

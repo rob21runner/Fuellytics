@@ -2,5 +2,6 @@
 *.db
 /test
 /.idea
+/static/recap
 /logs
 *.db-journal
