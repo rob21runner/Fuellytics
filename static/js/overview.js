@@ -1,6 +1,23 @@
-// =======================
-// Variables Globales
-// =======================
+trackPageView("overview");
+
+ let sessionStart = Date.now();
+
+ window.addEventListener("beforeunload", () => {
+   const duration = Date.now() - sessionStart;
+   const payload = {
+     type: "leave",
+     page: "overview",
+     data: { durationMs: duration },
+     userId: localStorage.getItem("userId")
+   };
+
+   navigator.sendBeacon(`${API_BASE_URL}/track`, new Blob([JSON.stringify(payload)], {
+     type: "application/json"
+   }));
+ });
+
+ // PAS TOUCHER PARTIE AU DESSUS OMFG
+
 let currentFuel = 'SP95';
 let currentMode = 'region';
 let geojsonLayer = null;
@@ -10,9 +27,7 @@ let map = null;
 let globalMinPrice = null;
 let globalMaxPrice = null;
 
-// =======================
-// Initialisation
-// =======================
+
 async function start() {
     await loadAllPrices(currentMode, currentFuel);
     renderRegionDepartementMap();
@@ -57,11 +72,12 @@ function renderRegionDepartementMap() {
     if (!map) {
         map = L.map('statMap', {
             center: [46.5, 2.5],
-            zoom: 5,
             zoomControl: false,
             scrollWheelZoom: false,
-            attributionControl: false
-        });
+            attributionControl: false,
+            maxBounds: [[41, -5], [51.5, 10]],   // Limites France approximatives
+            maxBoundsViscosity: 1.0
+        }).setView([46.5, 2.5], 5);;
 
         L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap'
