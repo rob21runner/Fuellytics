@@ -136,7 +136,7 @@ function getColor(price) {
         g = Math.floor(255 * (1 - (ratio - 0.5) * 2));
     }
 
-    return `rgb(${r},${g},0)`;
+    return `rgb(${r},${g},80)`;
 }
 
 

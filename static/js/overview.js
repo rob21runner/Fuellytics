@@ -16,6 +16,37 @@ window.addEventListener("beforeunload", () => {
   }));
 });
 
+const serviceIcons = {
+  "Aire de camping-cars": "fa-caravan",
+  "Automate CB 24/24": "fa-credit-card",
+  "Bar": "fa-mug-hot",
+  "Bornes électriques": "fa-bolt",
+  "Boutique alimentaire": "fa-apple-alt",
+  "Boutique non alimentaire": "fa-store",
+  "Carburant additivé": "fa-vial",
+  "DAB (Distributeur automatique de billets)": "fa-money-bill-alt",
+  "Douches": "fa-shower",
+  "Espace bébé": "fa-baby",
+  "GNV": "fa-gas-pump",
+  "Lavage automatique": "fa-car-side",
+  "Lavage manuel": "fa-hands-wash",
+  "Laverie": "fa-soap",
+  "Location de véhicule": "fa-car",
+  "Piste poids lourds": "fa-truck",
+  "Relais colis": "fa-box-open",
+  "Restauration sur place": "fa-utensils",
+  "Restauration à emporter": "fa-hamburger",
+  "Services réparation / entretien": "fa-tools",
+  "Station de gonflage": "fa-wind",
+  "Toilettes publiques": "fa-restroom",
+  "Vente d'additifs carburants": "fa-vial",
+  "Vente de fioul domestique": "fa-fire",
+  "Vente de gaz domestique (Butane, Propane)": "fa-gas-pump",
+  "Vente de pétrole lampant": "fa-flask",
+  "Wifi": "fa-wifi"
+};
+
+
 // PAS TOUCHER PARTIE AU DESSUS OMFG
 let fuelType = localStorage.getItem('preferredFuel') || 'SP95';
 const fuelSelect = document.getElementById("fuelSelect");
@@ -39,456 +70,264 @@ if (fuelSelect) {
 }
 
 let currentFuel = fuelType;
-let currentMode = 'region';
-let geojsonLayer = null;
-let priceData = {};
-let map = null;
+let currentZoneType = 'region'; // par défaut
+let currentSelectedZone = 'france'; // par défaut
 
-let globalMinPrice = null;
-let globalMaxPrice = null;
-
-const serviceIcons = {
-    "Aire de camping-cars": "fa-caravan",
-    "Automate CB 24/24": "fa-credit-card",
-    "Bar": "fa-mug-hot",
-    "Bornes électriques": "fa-bolt",
-    "Boutique alimentaire": "fa-apple-alt",
-    "Boutique non alimentaire": "fa-store",
-    "Carburant additivé": "fa-vial",
-    "DAB (Distributeur automatique de billets)": "fa-money-bill-alt",
-    "Douches": "fa-shower",
-    "Espace bébé": "fa-baby",
-    "GNV": "fa-gas-pump",
-    "Lavage automatique": "fa-car-side",
-    "Lavage manuel": "fa-hands-wash",
-    "Laverie": "fa-soap",
-    "Location de véhicule": "fa-car",
-    "Piste poids lourds": "fa-truck",
-    "Relais colis": "fa-box-open",
-    "Restauration sur place": "fa-utensils",
-    "Restauration à emporter": "fa-hamburger",
-    "Services réparation / entretien": "fa-tools",
-    "Station de gonflage": "fa-wind",
-    "Toilettes publiques": "fa-restroom",
-    "Vente d'additifs carburants": "fa-vial",
-    "Vente de fioul domestique": "fa-fire",
-    "Vente de gaz domestique (Butane, Propane)": "fa-gas-pump",
-    "Vente de pétrole lampant": "fa-flask",
-    "Wifi": "fa-wifi"
-};
-
-async function start() {
-  await loadAllPrices(currentMode, currentFuel);
-  renderRegionDepartementMap();
+async function fetchRecap(zone = 'france', fuel = 'SP95') {
+  const params = new URLSearchParams({ zone, fuel });
+  const res = await fetch(`${API_BASE_URL}/recap?${params}`);
+  if (!res.ok) throw new Error("Erreur /recap");
+  return await res.json();
 }
 
-async function reloadData() {
-  if (geojsonLayer) {
-    geojsonLayer.remove();
-  }
-  await loadAllPrices(currentMode, currentFuel);
-  renderRegionDepartementMap();
+async function fetchZonePrices(zoneType = 'region', fuel = 'SP95') {
+  const params = new URLSearchParams({ zone_type: zoneType, fuel });
+  const res = await fetch(`${API_BASE_URL}/recap/price?${params}`);
+  if (!res.ok) throw new Error("Erreur /recap/price");
+  return await res.json();
 }
 
-function renderRegionDepartementMap() {
-  if (!map) {
-    map = L.map('statMap', {
-      center: [46.5, 2.5],
-      zoomControl: false,
-      scrollWheelZoom: false,
-      attributionControl: false,
-      maxBounds: [[41, -5], [51.5, 10]],
-      maxBoundsViscosity: 1.0
-    }).setView([46.5, 2.5], 5);
+async function loadOverviewData() {
+  try {
+    const [recapData, priceZones] = await Promise.all([
+      fetchRecap(currentSelectedZone, currentFuel),
+      fetchZonePrices(currentZoneType, currentFuel)
+    ]);
+    window.globalMinPrice = Math.min(...priceZones.map(z => z.valeur));
+    window.globalMaxPrice = Math.max(...priceZones.map(z => z.valeur));
 
-    L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap'
-    }).addTo(map);
+
+    updateSummary(recapData);
+    updatePriceGraph(recapData);
+    updateStationDetails(recapData);
+    updateMap(priceZones);
+
+    document.getElementById("selectedZoneTitle").textContent = currentSelectedZone === "france" ? "France" : currentSelectedZone;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+function updateSummary(data) {
+  document.getElementById("stat-stations").textContent = data.station_count ?? '–';
+  document.getElementById("stat-avg-price").textContent = `${(data.avg_price?.at(-1)?.toFixed(3))}€` ?? '–';
+  document.getElementById("stat-economic").textContent = data.cheapest_ville ?? '–';
+}
+
+function updatePriceGraph(data) {
+  if (!data || !data.date) return;
+
+  const dates = data.date;
+  const min = data.min_price;
+  const avg = data.avg_price;
+  const max = data.max_price;
+
+  Plotly.newPlot("pricePlot", [
+    // Max line (trace 1)
+    {
+      x: dates,
+      y: max,
+      mode: "lines",
+      name: "Prix maximum",
+      line: { color: "#f44336", shape: "spline" },
+      fill: null
+    },
+    // Avg line + fill to Max (trace 2)
+    {
+      x: dates,
+      y: avg,
+      mode: "lines",
+      name: "Prix moyen",
+      line: { color: "#2196f3", shape: "spline" },
+      fill: "tonexty",
+      fillcolor: "rgba(244, 67, 54, 0.2)"
+    },
+    // Min line + fill to Avg (trace 3)
+    {
+      x: dates,
+      y: min,
+      mode: "lines",
+      name: "Prix minimum",
+      line: { color: "#4caf50", shape: "spline" },
+      fill: "tonexty",
+      fillcolor: "rgba(76, 175, 80, 0.2)"
+    }
+  ], {
+    hovermode: 'x unified',
+    margin: { t: 30, l: 40, r: 20, b: 40 },
+    yaxis: { title: "Prix (€)", gridcolor: "#ccc", range: [0, 2.5]},
+    xaxis: { title: "Date", gridcolor: "#eee" },
+    paper_bgcolor: "rgba(0,0,0,0)",
+    plot_bgcolor: "rgba(0,0,0,0)",
+    legend: { x: 0, y: 1.2, orientation: "h" },
+    font: { color: textColor }
+  }, {
+    responsive: true,
+    displayModeBar: false,
+    displaylogo: false
+  });
+
+  const graph = document.getElementById('pricePlot');
+
+  graph.on('plotly_click', function(eventData) {
+    const pointIndex = eventData.points[0].pointIndex;
+    updateStationDetails(data, pointIndex);
+  });
+}
+
+function updateStationDetails(data, day = -1) {
+  const lastDate = data.date?.at(day);
+  const historyToday = data.history?.[lastDate];
+
+  if (!historyToday) return;
+
+  // Station la moins chère
+  const min = historyToday.min;
+  document.getElementById("moins").innerHTML = `
+    <div class="box-title"><h2>Station la moins chère</h2></div>
+    <div class="param adresse">${min?.adresse ?? '–'}, ${min?.ville ?? '–'}</div>
+    <div class="param">${min?.prix?.toFixed(3) ?? '–'}€</div>
+    <div class="param station-services">${parseServices(min?.services)}</div>
+  `;
+
+  // Station la plus chère
+  const max = historyToday.max;
+  document.getElementById("plus").innerHTML = `
+    <div class="box-title"><h2>Station la plus chère</h2></div>
+    <div class="param adresse">${max?.adresse ?? '–'}, ${max?.ville ?? '–'}</div>
+    <div class="param">${max?.prix?.toFixed(3) ?? '–'}€</div>
+    <div class="param station-services">${parseServices(max?.services)}</div>
+  `;
+}
+
+function parseServices(serviceStr) {
+  try {
+    const parsed = JSON.parse(serviceStr);
+    const servicesArray = Array.isArray(parsed.service) ? parsed.service : [parsed.service];
+
+    return servicesArray.map(s => {
+      const icon = serviceIcons[s];
+      const safeLabel = (s ?? '').replace(/"/g, '&quot;');
+      if (!icon) return '';
+
+      return `
+        <div class="service-icon tooltip" title="${safeLabel}" data-label="${safeLabel}">
+          <i class="fas ${icon}"></i>
+          <div class="tooltiptext">${safeLabel}</div>
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    return '';
+  }
+}
+
+
+let map;
+let geoLayer;
+let priceZones = [];
+
+function createMap() {
+  map = L.map('statMap', {
+    center: [46.5, 2.5], // Centre France
+    zoom: 5,
+    minZoom: 5,
+    maxBounds: [[41, -5], [51.5, 10]],
+    maxBoundsViscosity: 1.0,
+    zoomControl: false,
+    attributionControl: false
+  });
+
+  L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+}
+
+async function loadGeoJson(type) {
+  if (geoLayer) {
+    map.removeLayer(geoLayer);
   }
 
-  function loadGeoJSON(mode) {
-    const url = mode === 'region' ? '/static/regions.geojson' : '/static/departements.geojson';
+  const file = type === "region" ? "/static/regions.geojson" : "/static/departements.geojson";
 
-    fetch(url)
-      .then(res => res.json())
-      .then(geojson => {
-        geojsonLayer = L.geoJSON(geojson, {
-          style: feature => {
-            const zoneName = feature.properties.nom;
-            const avgPrice = priceData[zoneName];
-            const normalizedPrice = avgPrice ?? 0;
+  const res = await fetch(file);
+  const geojson = await res.json();
 
-            return {
-              fillColor: getColor(normalizedPrice),
-              weight: 1,
-              color: '#444',
-              fillOpacity: 0.6
-            };
-          },
-          onEachFeature: (feature, layer) => {
-            const zoneName = feature.properties.nom;
-            layer.bindTooltip(zoneName, { sticky: true });
+  geoLayer = L.geoJSON(geojson, {
+    style: styleFeature,
+    onEachFeature: onEachFeature
+  }).addTo(map);
+}
 
-            layer.on({
-              mouseover: e => {
-                const layer = e.target;
-                layer.setStyle({
-                  weight: 2,
-                  color: '#000',
-                  fillOpacity: 0.8
-                });
-              },
-              mouseout: e => {
-                geojsonLayer.resetStyle(e.target);
-              },
-              click: () => {
-                fetchRecapData(zoneName);
-              }
-            });
-          }
-        }).addTo(map);
-      })
-      .catch(error => {
-        console.error("Erreur chargement GeoJSON", error);
-      });
-  }
+function styleFeature(feature) {
+  const name = feature.properties.nom; // On suppose propriété 'nom'
+  const matching = priceZones.find(p => p.nom === name);
+  const value = matching ? matching.valeur : null;
 
-  loadGeoJSON(currentMode);
+  return {
+    fillColor: getColor(value),
+    weight: 1,
+    opacity: 1,
+    color: 'white',
+    dashArray: '3',
+    fillOpacity: 0.7
+  };
 }
 
 function getColor(price) {
-  if (globalMinPrice == null || globalMaxPrice == null || globalMinPrice === globalMaxPrice) {
-    return '#888';
-  }
+    if (!window.globalMinPrice || !window.globalMaxPrice || window.globalMinPrice === window.globalMaxPrice) {
+        return '#888';
+    }
+    const ratio = Math.min(Math.max((price - window.globalMinPrice) / (window.globalMaxPrice - window.globalMinPrice), 0), 1);
 
-  const ratio = Math.min(Math.max((price - globalMinPrice) / (globalMaxPrice - globalMinPrice), 0), 1);
+    let r, g;
+    if (ratio < 0.5) {
+        r = Math.floor(255 * (ratio * 2));
+        g = 255;
+    } else {
+        r = 255;
+        g = Math.floor(255 * (1 - (ratio - 0.5) * 2));
+    }
 
-  let r, g;
-  if (ratio < 0.5) {
-    r = Math.floor(255 * (ratio * 2));
-    g = 255;
-  } else {
-    r = 255;
-    g = Math.floor(255 * (1 - (ratio - 0.5) * 2));
-  }
-
-  return `rgb(${r},${g},0)`;
+    return `rgb(${r},${g},80)`;
 }
 
-async function loadAllPrices(mode, fuel) {
-  priceData = {};
-  globalMinPrice = null;
-  globalMaxPrice = null;
+function onEachFeature(feature, layer) {
+  const name = feature.properties.nom;
+  const matching = priceZones.find(p => p.nom === name);
 
-  const url = mode === 'region' ? '/static/regions.geojson' : '/static/departements.geojson';
-  const geojson = await fetch(url).then(res => res.json());
+  layer.bindTooltip(`${name}<br>${matching ? matching.valeur.toFixed(3) + "€" : '–'}`, { sticky: true });
 
-  const prices = [];
-  let totalStations = 0;
-  let cheapestVille = null;
-  let cheapestPrice = Infinity;
-  let avgPrice = 0;
-
-  const fuelFile = `/static/recap/${fuel}.json`;
-  let allData = {};
-  try {
-    const response = await fetch(fuelFile);
-    if (!response.ok) {
-      console.warn(`Fichier ${fuel}.json introuvable`);
-      return;
+  layer.on({
+    click: () => {
+      currentSelectedZone = name;
+      loadOverviewData(); // Recharge tout
     }
-    allData = await response.json();
-  } catch (err) {
-    console.error(`Erreur en chargeant ${fuelFile}`, err);
-    return;
-  }
-
-  for (const feature of geojson.features) {
-    const zoneName = feature.properties.nom;
-    const zoneData = allData[zoneName];
-    if (zoneData && zoneData.avg_price?.length > 0) {
-      const lastPrice = zoneData.avg_price.at(-1);
-      priceData[zoneName] = lastPrice;
-      prices.push(lastPrice);
-      totalStations += zoneData.station_count;
-      avgPrice += lastPrice;
-
-      if (lastPrice < cheapestPrice) {
-        cheapestPrice = lastPrice;
-        cheapestVille = zoneData.cheapest_ville;
-      }
-    }
-  }
-
-  if (prices.length > 0) {
-    globalMinPrice = Math.min(...prices);
-    globalMaxPrice = Math.max(...prices);
-    console.log(`Min = ${globalMinPrice}, Max = ${globalMaxPrice} pour le carburant ${fuel}`);
-  } else {
-    globalMinPrice = 1.0;
-    globalMaxPrice = 2.0;
-  }
-
-  avgPrice /= prices.length;
-
-  document.getElementById('stat-stations').innerText = totalStations;
-  document.getElementById('stat-avg-price').innerText = avgPrice.toFixed(2);
-  document.getElementById('stat-economic').innerText = cheapestVille ?? 'N/A';
-
-  // Station la moins chère (France entière)
-  if (cheapestPrice !== Infinity && cheapestVille) {
-    let cheapestStation = null;
-
-    for (const zoneName in allData) {
-      const zone = allData[zoneName];
-      const lastDate = Object.keys(zone.history).at(-1);
-      if (zone?.history?.[lastDate]?.min?.prix === cheapestPrice) {
-        cheapestStation = zone.history[lastDate].min;
-        break;
-      }
-    }
-
-    if (cheapestStation) {
-      let servicesHtml = '';
-      try {
-        const parsed = JSON.parse(cheapestStation.services);
-        if (parsed.service && Array.isArray(parsed.service)) {
-          servicesHtml = parsed.service.map(s => {
-            const icon = serviceIcons[s];
-            const safeLabel = s.replace(/"/g, '&quot;');
-            return icon
-              ? `<div class="service-icon tooltip" title="${safeLabel}" data-label="${safeLabel}">
-                      <i class="fas ${icon}"></i>
-                      <div class="tooltiptext">${safeLabel}</div>
-                 </div>`
-              : '';
-          }).join('');
-        }
-      } catch (e) {}
-
-      document.getElementById('moins').innerHTML = `
-          <div class="box-title">Station la moins chère (France)</div>
-          <div>Adresse: ${cheapestStation.adresse}</div>
-          <div>Ville: ${cheapestStation.ville}</div>
-          <div>Prix: ${cheapestStation.prix} €/L</div>
-          <div class="cat-header">🏪 Services</div>
-          <div class="station-services">${servicesHtml}</div>
-      `;
-    }
-  }
-
-  // Station la plus chère (France entière)
-  let mostExpensivePrice = -Infinity;
-  let mostExpensiveStation = null;
-
-  for (const zoneName in allData) {
-    const zone = allData[zoneName];
-    const lastDate = Object.keys(zone.history).at(-1);
-    const maxStation = zone.history?.[lastDate]?.max;
-    if (maxStation?.prix > mostExpensivePrice) {
-      mostExpensivePrice = maxStation.prix;
-      mostExpensiveStation = maxStation;
-    }
-  }
-
-  if (mostExpensiveStation) {
-    let servicesHtml = '';
-    try {
-      const parsed = JSON.parse(mostExpensiveStation.services);
-      if (parsed.service && Array.isArray(parsed.service)) {
-        servicesHtml = parsed.service.map(s => {
-          const icon = serviceIcons[s];
-          const safeLabel = s.replace(/"/g, '&quot;');
-          return icon
-            ? `<div class="service-icon tooltip" title="${safeLabel}" data-label="${safeLabel}">
-                    <i class="fas ${icon}"></i>
-                    <div class="tooltiptext">${safeLabel}</div>
-               </div>`
-            : '';
-        }).join('');
-      }
-    } catch (e) {}
-
-    document.getElementById('plus').innerHTML = `
-        <div class="box-title">Station la plus chère (France)</div>
-        <div>Adresse: ${mostExpensiveStation.adresse}</div>
-        <div>Ville: ${mostExpensiveStation.ville}</div>
-        <div>Prix: ${mostExpensiveStation.prix} €/L</div>
-        <div class="cat-header">🏪 Services</div>
-        <div class="station-services">${servicesHtml}</div>
-    `;
-  }
+  });
 }
 
-function fetchRecapData(zoneName) {
-  const url = `/recap?zone=${encodeURIComponent(zoneName)}&fuel=${currentFuel}`;
-
-  fetch(url)
-    .then(response => {
-      if (!response.ok) throw new Error("Erreur API");
-      return response.json();
-    })
-    .then(data => {
-      const stationCount = data.station_count || 0;
-      const avgPrice = data.avg_price?.at(-1) || 0;
-      const cheapestCity = data.cheapest_ville || "Inconnu";
-      const cheapestPrice = data.min_price?.at(-1) || 0;
-
-      document.getElementById('stat-stations').innerText = stationCount;
-      document.getElementById('stat-avg-price').innerText = avgPrice.toFixed(3);
-      document.getElementById('stat-economic').innerText = `${cheapestCity}`;
-      document.getElementById('selectedZoneTitle').innerText = zoneName;
-
-      updatePricePlot(data);
-      displayStationsForDate(data.history, data.date.at(-1));
-
-      document.getElementById('pricePlot').on('plotly_click', function (dataClick) {
-        const clickedDate = dataClick.points[0].x;
-        displayStationsForDate(window.lastHistoryData, clickedDate);
-      });
-
-      window.lastHistoryData = data.history;
-    })
-    .catch(error => {
-      console.error('Erreur fetchRecapData', error);
-      document.getElementById('priceInfo').innerText = "Données indisponibles.";
-    });
+async function updateMap(zones) {
+  priceZones = zones; // Stockage global
+  await loadGeoJson(currentZoneType);
 }
 
-function displayStationsForDate(history, date) {
-  const moinsDiv = document.getElementById('moins');
-  const plusDiv = document.getElementById('plus');
+createMap()
 
-  if (!history[date]) {
-    moinsDiv.innerHTML = "<div>Pas de données disponibles pour cette date.</div>";
-    plusDiv.innerHTML = "<div>Pas de données disponibles pour cette date.</div>";
-    return;
-  }
-
-  const cheapestStation = history[date].min;
-  const mostExpensiveStation = history[date].max;
-
-  moinsDiv.innerHTML = `
-    <div class="box-title">Station la moins chère</div>
-    <div>Adresse: ${cheapestStation.adresse}</div>
-    <div>Ville: ${cheapestStation.ville}</div>
-    <div>Prix: ${cheapestStation.prix} €/L</div>
-    <div>Services: ${generateServicesHtml(cheapestStation.services)}</div>
-  `;
-
-  if (mostExpensiveStation) {
-    plusDiv.innerHTML = `
-      <div class="box-title">Station la plus chère</div>
-      <div>Adresse: ${mostExpensiveStation.adresse}</div>
-      <div>Ville: ${mostExpensiveStation.ville}</div>
-      <div>Prix: ${mostExpensiveStation.prix} €/L</div>
-      <div>Services: ${generateServicesHtml(mostExpensiveStation.services)}</div>
-    `;
-  } else {
-    plusDiv.innerHTML = "<div>Aucune station disponible.</div>";
-  }
-}
-
-function generateServicesHtml(services) {
-  try {
-    if (!services || !Array.isArray(services.service)) {
-      return `<div class="station-services">Aucun service</div>`;
-    }
-
-    const container = document.createElement("div");
-    container.className = "station-services";
-
-    services.service.forEach((serviceName) => {
-      const iconName = serviceIcons[serviceName];
-      const icon = document.createElement("i");
-      icon.className = iconName ? `fa-solid ${iconName} service-icon` : "fa-solid fa-question service-icon";
-      icon.title = serviceName;
-      container.appendChild(icon);
-    });
-
-    return container.outerHTML;
-
-  } catch (error) {
-    console.error("Erreur de parsing des services:", error);
-    return `<div class="station-services">Erreur lors du chargement des services</div>`;
-  }
-}
-
-function updatePricePlot(data) {
-  const dates = data.date;
-  const minPrices = data.min_price;
-  const avgPrices = data.avg_price;
-  const maxPrices = data.max_price;
-
-  const dataPlot = [
-    {
-      x: dates,
-      y: minPrices,
-      type: 'scatter',
-      mode: 'lines+markers',
-      name: 'Prix Minimum',
-      line: { color: 'green' },
-      marker: { color: 'green' }
-    },
-    {
-      x: dates,
-      y: avgPrices,
-      type: 'scatter',
-      mode: 'lines+markers',
-      name: 'Prix Moyen',
-      line: { color: 'blue' },
-      marker: { color: 'blue' }
-    },
-    {
-      x: dates,
-      y: maxPrices,
-      type: 'scatter',
-      mode: 'lines+markers',
-      name: 'Prix Maximum',
-      line: { color: 'red' },
-      marker: { color: 'red' }
-    }
-  ];
-
-  const layout = {
-    title: 'Évolution des prix sur les 7 derniers jours',
-    xaxis: {
-      title: 'Date',
-      type: 'category'
-    },
-    yaxis: {
-      title: 'Prix en €/L'
-    },
-    legend: {
-      orientation: "h",
-      y: -0.2
-    },
-    margin: {
-      t: 40,
-      l: 50,
-      r: 30,
-      b: 80
-    },
-    plot_bgcolor: '#fff',
-    paper_bgcolor: '#fff'
-  };
-
-  Plotly.newPlot('pricePlot', dataPlot, layout, { responsive: true });
-}
-
-document.getElementById('fuelSelect').addEventListener('change', async (e) => {
+// Filtres
+document.getElementById("fuelSelect").addEventListener("change", e => {
   currentFuel = e.target.value;
-  await reloadData();
+  loadOverviewData();
 });
 
-document.getElementById('regionButton').addEventListener('click', async () => {
-  currentMode = 'region';
-  await reloadData();
+document.getElementById("regionButton").addEventListener("click", () => {
+  currentZoneType = "region";
+  loadOverviewData();
 });
 
-document.getElementById('departementButton').addEventListener('click', async () => {
-  currentMode = 'departement';
-  await reloadData();
+document.getElementById("departementButton").addEventListener("click", () => {
+  currentZoneType = "departement";
+  loadOverviewData();
 });
 
-start();
+// Démarrage
+window.addEventListener("load", loadOverviewData);
