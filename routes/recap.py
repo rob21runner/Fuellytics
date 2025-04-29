@@ -154,7 +154,7 @@ async def get_recap(
     zone: str = Query(default="france"),
     fuel: str = Query(default="SP95")
 ):
-    file_path = os.path.join(DATA_DIR, f"{fuel}.json")
+    file_path = os.path.join(DATA_DIR, f"{fuel.upper()}.json")
 
     if not os.path.exists(file_path):
         return JSONResponse(status_code=404, content={"error": "Fuel type not found"})
@@ -183,7 +183,7 @@ async def get_recap_price(
     zone_type: str = Query(default="region"),
     fuel: str = Query(default="SP95")
 ) :
-    file_path = os.path.join(DATA_DIR, f"{fuel}.json")
+    file_path = os.path.join(DATA_DIR, f"{fuel.upper()}.json")
 
     if not os.path.exists(file_path):
         return JSONResponse(status_code=404, content={"error": "Fuel type not found"})
