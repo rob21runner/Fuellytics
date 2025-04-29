@@ -137,36 +137,37 @@ async function loadAllPrices(mode, fuel) {
     let cheapestPrice = Infinity;
     let avgPrice = 0;
 
+    // 🔁 Charger une seule fois le fichier fuel.json
+    const fuelFile = `/static/recap/${fuel}.json`;
+    let allData = {};
+    try {
+        const response = await fetch(fuelFile);
+        if (!response.ok) {
+            console.warn(`Fichier ${fuel}.json introuvable`);
+            return;
+        }
+        allData = await response.json();
+    } catch (err) {
+        console.error(`Erreur en chargeant ${fuelFile}`, err);
+        return;
+    }
+
     for (const feature of geojson.features) {
         const zoneName = feature.properties.nom;
-        try {
-            // Charger le fichier JSON correspondant au carburant (ex: recap/SP95.json)
-            const fuelFile = `/static/recap/${fuel}.json`;
-            const response = await fetch(fuelFile);
-            if (!response.ok) {
-                console.warn(`Fichier ${fuel}.json introuvable pour la zone ${zoneName}`);
-                continue;
+
+        const zoneData = allData[zoneName];
+        if (zoneData && zoneData.avg_price && zoneData.avg_price.length > 0) {
+            const lastPrice = zoneData.avg_price[zoneData.avg_price.length - 1];
+            priceData[zoneName] = lastPrice;
+            prices.push(lastPrice);
+
+            totalStations += zoneData.station_count;
+            avgPrice += lastPrice;
+
+            if (lastPrice < cheapestPrice) {
+                cheapestPrice = lastPrice;
+                cheapestVille = zoneData.cheapest_ville;
             }
-
-            const data = await response.json();
-            const zoneData = data[zoneName];
-
-            if (zoneData && zoneData.avg_price && zoneData.avg_price.length > 0) {
-                const lastPrice = zoneData.avg_price[zoneData.avg_price.length - 1];
-                priceData[zoneName] = lastPrice;
-                prices.push(lastPrice);
-
-                // Mise à jour du total de stations, prix moyen et ville la moins chère
-                totalStations += zoneData.station_count;
-                avgPrice += lastPrice;
-
-                if (lastPrice < cheapestPrice) {
-                    cheapestPrice = lastPrice;
-                    cheapestVille = zoneData.cheapest_ville;
-                }
-            }
-        } catch (error) {
-            console.error("Erreur en chargeant les prix pour", zoneName, error);
         }
     }
 
@@ -175,15 +176,12 @@ async function loadAllPrices(mode, fuel) {
         globalMaxPrice = Math.max(...prices);
         console.log(`Min = ${globalMinPrice}, Max = ${globalMaxPrice} pour le carburant ${fuel}`);
     } else {
-        // fallback
         globalMinPrice = 1.0;
         globalMaxPrice = 2.0;
     }
 
-    // Calcul du prix moyen
     avgPrice = avgPrice / prices.length;
 
-    // Mettre à jour le résumé sur la page
     document.getElementById('stat-stations').innerText = totalStations;
     document.getElementById('stat-avg-price').innerText = avgPrice.toFixed(2);
     document.getElementById('stat-economic').innerText = cheapestVille ?? 'N/A';
