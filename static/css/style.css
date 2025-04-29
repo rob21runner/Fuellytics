@@ -123,7 +123,7 @@ body {
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-#fuelSelect, #searchInput, #searchButton {
+#fuelSelect, #searchInput, #searchButton, .mapbox button {
     border: none;
     padding: 6px 10px;
     border-radius: 8px;
@@ -133,14 +133,16 @@ body {
     outline: none;
 }
 
-#searchButton {
+#searchButton,
+.mapbox button {
     background-color: #4caf50;
-    color: var(--bg-main);
+    color: #f4f5f6;
     cursor: pointer;
     transition: background-color 0.2s;
 }
 
-#searchButton:hover {
+#searchButton:hover,
+.mapbox button:hover {
     background-color: #45a043;
 }
 
@@ -309,6 +311,111 @@ body {
   transform: translateX(0);
 }
 
+.overview #main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 40px;
+    width: -webkit-fill-available;
+}
+
+.overview-container {
+    width: 80vw;
+    color: var(--text-main);
+    padding: 30px 40px;
+}
+
+.overview h1 {
+    margin-top: 0;
+}
+
+.row {
+    display: flex;
+    gap: 40px;
+    width: -webkit-fill-available;
+    margin-top: 40px;
+}
+
+.box {
+    background: var(--box-bg);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+}
+
+.mapbox {
+    padding: 0;
+    flex: 2;
+    position: relative;
+}
+
+#filters {
+    position: absolute;
+    z-index: 1000;
+    top: 20px;
+    left: 20px;
+}
+
+#statMap {
+    height: 372px;
+    border-radius: 12px;
+}
+
+#summaryBox {
+    flex: 1;
+    display:flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.stat.box {
+    position: relative;
+    height: 55px
+}
+
+.stat.box div:last-child{
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    font-size: 2rem
+}
+
+.box.plot {
+    flex: 1
+}
+
+.plot h2 {
+    margin: 0
+}
+
+#pricePlot {
+    height: 372px;
+}
+
+#stations {
+    flex: 1;
+    display: flex;
+    padding: 20px;
+    gap: 20px;
+}
+
+#stations h2 {
+    margin-top: 0
+}
+
+.param {
+    padding-top: 20px
+}
+
+.param:not(.adresse) {
+    margin-top: 20px;
+    border-top: solid 1px grey
+}
+
+#moins, #plus {
+    flex: 1
+}
+
 @media (max-width: 1130px) {
     header {
         position: fixed;
@@ -336,6 +443,10 @@ body {
         left: auto;
         transform: none;
         padding: 0;
+    }
+
+    .overview-container {
+        width: 80vw;
     }
 }
 
@@ -395,6 +506,16 @@ body {
     #notification {
         top: 90px
     }
+
+    body.overview {
+        width: 100vw;
+        height: 100vh;
+        overflow: auto
+    }
+
+    .overview-container {
+        width: 80vw;
+        padding: 10px 15px;
+        border-radius: 0 0 12px 12px
+    }
 }
-
-

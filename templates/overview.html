@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Vue d'ensemble des prix – Fuellytics</title>
     <meta name="description" content="Trouvez des analyses hebdomadaire sur le prix du carburant en France. Trouvez la station-service la moins chère rapidement avec Fuellytics.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link rel="stylesheet" href="/static/css/style.css" />
-    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <link rel="manifest" href="/static/manifest.json">
     <link rel="apple-touch-icon" href="/static/img/icons/apple-icon-180x180.png">
     <meta name="theme-color" content="#f4f5f6" id="theme-color-meta">
@@ -21,52 +22,8 @@
 	<meta name="twitter:title" content="Trouvez votre station-service au meilleur prix | Fuellytics" />
 	<meta name="twitter:description" content="Fuellytics vous aide à trouver les stations d'essence les moins chères autour de vous en temps réel." />
 	<meta name="twitter:image" content="https://fuellytics.robcorp.net/static/img/icons/small-share-banner.png" />
-    <style>
-        #main {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 40px;
-            width: 100vw;
-        }
-        .overview-container {
-            width: 1000px;
-            max-width: 1100px;
-            background: var(--box-bg);
-            color: var(--text-main);
-            padding: 30px 40px;
-            border-radius: 12px;
-            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
-        }
-        h1 {
-            margin-top: 0;
-        }
-        .building {
-            text-align: center;
-            font-size: 40px;
-            padding: 70px 0;
-        }
+    <script src="/static/js/base.js"></script>
 
-        @media (max-width: 1130px) {
-            .overview-container {
-                width: 80vw;
-            }
-        }
-
-        @media (max-width: 422px) {
-            body {
-                width: 100vw;
-                height: 100vh;
-                overflow: auto
-            }
-
-            .overview-container {
-                width: 80vw;
-                padding: 10px 15px;
-                border-radius: 0 0 12px 12px
-            }
-        }
-    </style>
 </head>
 <body class="overview">
 <header>
@@ -78,7 +35,7 @@
 </header>
 <div id="main">
     <div class="overview-container">
-        <h1>Vue d’ensemble des prix des carburants</h1>
+        <h1>Vue d’ensemble des prix des carburants - <span id="selectedZoneTitle">France</span></h1>
 
         <div class="row">
             <div class="mapbox box">
@@ -97,7 +54,6 @@
                 <div id="statMap"></div>
             </div>
             <div id="summaryBox">
-                <div id="selectedZoneTitle">France</div>
                 <div class="stat box">
                     <div class="label">Nombre de stations</div>
                     <div id="stat-stations">0</div>
@@ -113,15 +69,19 @@
             </div>
         </div>
         <div class="row">
-            <div id="pricePlot" class="box" style="height:400px;"></div>
+            <div class="box plot">
+                <div class="box-title"><h2>Evolution des prix</h2></div>
+                <div id="pricePlot"></div>
+            </div>
 
 
-            <div id="stations box">
+
+            <div id="stations" class="box">
                 <div id="moins" class="">
-                    <div class="box-title">Station la moins chère</div>
+                    <div class="box-title"><h2>Station la moins chère</h2></div>
                 </div>
                 <div id="plus" class="">
-                    <div class="box-title">Station la plus chère</div>
+                    <div class="box-title"><h2>Station la plus chère</h2></div>
                 </div>
             </div>
         </div>
@@ -130,10 +90,8 @@
 
 
 </div>
-
 <script src="https://cdn.plot.ly/plotly-2.20.0.min.js"></script>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="/static/js/base.js"></script>
 <script src="/static/js/overview.js"></script>
 </body>
 
