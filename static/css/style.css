@@ -261,7 +261,7 @@ body {
   gap: 6px;
 }
 
-.service-icon.tooltip {
+.service-icon.tooltip, .info.tooltip {
   position: relative;
   display: flex;
   align-items: center;
@@ -272,6 +272,18 @@ body {
   border-radius: 6px;
   font-size: 14px;
   color: var(--text-main);
+}
+
+.info.tooltip i {
+    z-index: 1000;
+}
+
+.info.tooltip {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    border-radius: 14px;
+    z-index: 1000;
 }
 
 .tooltiptext {
@@ -291,6 +303,15 @@ body {
   bottom: 125%;
   left: 50%;
   transform: translateX(-50%);
+}
+
+.info .tooltiptext {
+    left: 0;
+    bottom: 0;
+    border-radius: 14px;
+    transform: translateX(0);
+    width: 200px;
+    white-space: wrap;
 }
 
 .tooltip:hover .tooltiptext {
@@ -381,7 +402,8 @@ body {
 }
 
 .box.plot {
-    flex: 1
+    flex: 1;
+    position: relative;
 }
 
 .plot h2 {
