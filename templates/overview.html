@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Vue d'ensemble des prix – Fuellytics</title>
     <meta name="description" content="Trouvez des analyses hebdomadaire sur le prix du carburant en France. Trouvez la station-service la moins chère rapidement avec Fuellytics.">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
     <link rel="stylesheet" href="/static/css/style.css" />
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <link rel="manifest" href="/static/manifest.json">
@@ -67,7 +68,7 @@
         }
     </style>
 </head>
-<body>
+<body class="overview">
 <header>
     <div id="floatingHeader">
         <a href="/" class="nav-link">Carte</a>
@@ -79,11 +80,77 @@
     <div class="overview-container">
         <h1>Vue d’ensemble des prix des carburants</h1>
 
-        <div class="building">🚧 🏗 En Construction 🏗 🚧</div>
+        <div class="row">
+            <div class="mapbox box">
+                <div id="filters">
+                    <button id="regionButton">Région</button>
+                    <button id="departementButton">Département</button>
+                    <select id="fuelSelect">
+                        <option value="SP98">SP98</option>
+                        <option value="Gazole">Gazole</option>
+                        <option value="E10">E10</option>
+                        <option value="SP95">SP95</option>
+                        <option value="E85">E85</option>
+                        <option value="GPLc">GPLc</option>
+                    </select>
+                </div>
+                <div id="statMap"></div>
+            </div>
+            <div id="summaryBox">
+                <div id="selectedZoneTitle">France</div>
+                <div class="stat box">
+                    <div class="label">Nombre de stations</div>
+                    <div id="stat-stations">0</div>
+                </div>
+                <div class="stat box">
+                    <div class="label">Prix Moyen</div>
+                    <div id="stat-avg-price">0</div>
+                </div>
+                <div class="stat box">
+                    <div class="label">Ville la moins chère</div>
+                    <div id="stat-economic">0</div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div id="pricePlot" class="box" style="height:400px;"></div>
+
+
+            <div id="stations box">
+                <div id="moins" class="">
+                    <div class="box-title">Station la moins chère</div>
+                </div>
+                <div id="plus" class="">
+                    <div class="box-title">Station la plus chère</div>
+                </div>
+            </div>
+        </div>
     </div>
+
+
+
 </div>
 
-
+<script src="https://cdn.plot.ly/plotly-2.20.0.min.js"></script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="/static/js/base.js"></script>
 <script src="/static/js/overview.js"></script>
 </body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
