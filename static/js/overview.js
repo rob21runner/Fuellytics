@@ -389,26 +389,29 @@ function displayStationsForDate(history, date) {
   }
 }
 
-function generateServicesHtml(servicesJson) {
-  let servicesHtml = '';
+function generateServicesHtml(services) {
   try {
-    const parsed = JSON.parse(servicesJson);
-    if (parsed.service && Array.isArray(parsed.service)) {
-      servicesHtml = parsed.service.map(service => {
-        const icon = serviceIcons[service];
-        const safeLabel = service.replace(/"/g, '&quot;');
-        return icon
-          ? `<div class="service-icon tooltip" title="${safeLabel}" data-label="${safeLabel}">
-              <i class="fas ${icon}"></i>
-              <div class="tooltiptext">${safeLabel}</div>
-            </div>`
-          : '';
-      }).join('');
+    if (!services || !Array.isArray(services.service)) {
+      return `<div class="station-services">Aucun service</div>`;
     }
-  } catch (e) {
-    console.error('Erreur de parsing des services:', e);
+
+    const container = document.createElement("div");
+    container.className = "station-services";
+
+    services.service.forEach((serviceName) => {
+      const iconName = serviceIcons[serviceName];
+      const icon = document.createElement("i");
+      icon.className = iconName ? `fa-solid ${iconName} service-icon` : "fa-solid fa-question service-icon";
+      icon.title = serviceName;
+      container.appendChild(icon);
+    });
+
+    return container.outerHTML;
+
+  } catch (error) {
+    console.error("Erreur de parsing des services:", error);
+    return `<div class="station-services">Erreur lors du chargement des services</div>`;
   }
-  return servicesHtml;
 }
 
 function updatePricePlot(data) {
